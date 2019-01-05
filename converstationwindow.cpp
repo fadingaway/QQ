@@ -13,6 +13,8 @@
 #include "QPainterPath"
 #include "qmath.h"
 #include "QScrollBar"
+#include "QMenu"
+
 converstationWindow::converstationWindow(QWidget *parent) : QWidget(parent)
 {
     this->setWindowFlags(Qt::FramelessWindowHint);
@@ -60,21 +62,33 @@ converstationWindow::converstationWindow(QWidget *parent) : QWidget(parent)
     buttonDropdown->setFlat(true);
     buttonDropdown->setFixedSize(25,25);
     buttonDropdown->setCursor(Qt::PointingHandCursor);
-    buttonDropdown->setStyleSheet("QPushButton{background-image:url(:/Image/down_hover.png)}"
+    buttonDropdown->setStyleSheet("QPushButton{border-image:url(:/Image/dropDown_small.png)}"
+                                  "QPushButton:hover{background-color:#00BFFF;}"
+                                  "QPushButton:pressed{background-color:#009ACD;}"
                                   "QToolTip{background-color:white;font-family:微软雅黑;}");
+    buttonDropdown->setToolTip("窗口设置");
+    connect(buttonDropdown, &QPushButton::clicked, this, showDropDownMenu);
 
-    buttonMin = new QPushButton;
+    buttonMin = new QPushButton(this);
     buttonMin->setFlat(true);
     buttonMin->setFixedSize(25,25);
     buttonMin->setCursor(Qt::PointingHandCursor);
-    buttonMin->setStyleSheet("QPushButton{border-image:url(:/Image/min.png)} ");
+    buttonMin->setStyleSheet("QPushButton{border-image:url(:/Image/min.png)} "
+                             "QPushButton:hover{background-color:#00BFFF;}"
+                             "QPushButton:pressed{background-color:#009ACD;}"
+                             "QToolTip{background-color:white;font-family:微软雅黑;}" );
+    buttonMin->setToolTip("最小化");
     connect(buttonMin, &QPushButton::clicked, this, &converstationWindow::showMinimized);
 
     buttonMax = new QPushButton(this);
     buttonMax->setFlat(true);
     buttonMax->setFixedSize(25,25);
     buttonMax->setCursor(Qt::PointingHandCursor);
-    buttonMax->setStyleSheet("background-image:url(:/Image/uncheck_hover.png)");
+    buttonMax->setStyleSheet("QPushButton{border-image:url(:/Image/max.png)}"
+                             "QPushButton:hover{background-color:#00BFFF;}"
+                             "QPushButton:pressed{background-color:#009ACD;}"
+                             "QToolTip{background-color:white;font-family:微软雅黑;}");
+    buttonMax->setToolTip("最大化");
     connect(buttonMax, &QPushButton::clicked, this, &converstationWindow::showMaxWindow);
 
     buttonClose = new QPushButton;
@@ -83,8 +97,10 @@ converstationWindow::converstationWindow(QWidget *parent) : QWidget(parent)
     buttonClose->setCursor(Qt::PointingHandCursor);
     buttonClose->setAttribute(Qt::WA_TranslucentBackground);
     buttonClose->setStyleSheet("QPushButton{border-image:url(:/Image/exit.png)} "
-                               "QPushButton:hover{background-color:#00BFFF;}"
-                               "QPushButton:pressed{background-color:#009ACD;}");
+                               "QPushButton:hover{background-color:red;}"
+                               "QPushButton:pressed{background-color:#009ACD;}"
+                               "QToolTip{background-color:white;font-family:微软雅黑;}");
+    buttonClose->setToolTip("关闭");
     connect(buttonClose, &QPushButton::clicked, this, &converstationWindow::close);
 
     titleLayout->addWidget(nameAndQQZone);
@@ -106,34 +122,36 @@ converstationWindow::converstationWindow(QWidget *parent) : QWidget(parent)
     QHBoxLayout *mutiwayTalkLayout = new QHBoxLayout;
     voiceTalkButton = new QPushButton(this);
     voiceTalkButton->setFlat(true);
-    voiceTalkButton->setFixedSize(30,30);
+    voiceTalkButton->setFixedSize(25,25);
     voiceTalkButton->setCursor(Qt::PointingHandCursor);
-    QPixmap pixmap_1(":/Image/online.png");
-    pixmap_1 = getRoundImage(pixmap_1, voiceTalkButton->width()/2);
-    voiceTalkButton->setIcon(QIcon(pixmap_1));
-
+    voiceTalkButton->setStyleSheet("QPushButton{border-image:url(:/Image/call.png); border-radius:10px;"
+                                   "background-color:rgb(228,237,245)}"
+                                   "QPushButton::hover{background-color:rgb(205,222,236)}");
+    voiceTalkButton->setToolTip("发起语音通话");
 
     videoTalkButton = new QPushButton(this);
     videoTalkButton->setFlat(true);
-    videoTalkButton->setFixedSize(30,30);
+    videoTalkButton->setFixedSize(25,25);
     videoTalkButton->setCursor(Qt::PointingHandCursor);
-    QPixmap pixmap_2(":/Image/offline.png");
-    pixmap_2 = getRoundImage(pixmap_2, voiceTalkButton->width()/2);
-    videoTalkButton->setIcon(QIcon(pixmap_2));
+    videoTalkButton->setStyleSheet("QPushButton{border-image:url(:/Image/videoTalk.png); border-radius:10px;"
+                                   "background-color:rgb(228,237,245)}"
+                                   "QPushButton::hover{background-color:rgb(205,222,236)}");
+    videoTalkButton->setToolTip("发起视频通话");
 
     otherButton = new QPushButton(this);
     otherButton->setFlat(true);
-    otherButton->setFixedSize(30,30);
+    otherButton->setFixedSize(25,25);
     otherButton->setCursor(Qt::PointingHandCursor);
-    QPixmap pixmap_3(":/Image/hide.png");
-    pixmap_3 = getRoundImage(pixmap_3, voiceTalkButton->width()/2);
-    otherButton->setIcon(QIcon(pixmap_3));
+    otherButton->setStyleSheet("QPushButton{border-image:url(:/Image/more_big.png); border-radius:10px;"
+                                   "background-color:rgb(228,237,245)}"
+                                   "QPushButton::hover{background-color:rgb(205,222,236)}");
+
 
     mutiwayTalkLayout->addStretch(5);
     mutiwayTalkLayout->addWidget(voiceTalkButton);
     mutiwayTalkLayout->addWidget(videoTalkButton);
     mutiwayTalkLayout->addWidget(otherButton);
-    mutiwayTalkLayout->setSpacing(5);
+    mutiwayTalkLayout->setSpacing(10);
     mutiwayTalkLayout->setContentsMargins(0,12,13,3);
 
     conversationLayout = new QVBoxLayout;
@@ -148,63 +166,63 @@ converstationWindow::converstationWindow(QWidget *parent) : QWidget(parent)
     QHBoxLayout *toolBoxLayout = new QHBoxLayout;
     expressionButton = new QPushButton(this);
     expressionButton->setFlat(true);
-    expressionButton->setFixedSize(25,25);
+    expressionButton->setFixedSize(20,20);
     expressionButton->setCursor(Qt::PointingHandCursor);
-    expressionButton->setStyleSheet("background-image:url(:/Image/focus.png)");
+    expressionButton->setStyleSheet("border-image:url(:/Image/expression.png)");
 
     gifButton = new QPushButton(this);
     gifButton->setFlat(true);
-    gifButton->setFixedSize(25,25);
+    gifButton->setFixedSize(20,20);
     gifButton->setCursor(Qt::PointingHandCursor);
-    gifButton->setStyleSheet("background-image:url(:/Image/focus.png)");
+    gifButton->setStyleSheet("border-image:url(:/Image/gif.png)");
 
     copyAndCutButton = new QPushButton(this);
     copyAndCutButton->setFlat(true);
-    copyAndCutButton->setFixedSize(25,25);
+    copyAndCutButton->setFixedSize(20,20);
     copyAndCutButton->setCursor(Qt::PointingHandCursor);
-    copyAndCutButton->setStyleSheet("background-image:url(:/Image/focus.png)");
+    copyAndCutButton->setStyleSheet("border-image:url(:/Image/screenshot.png)");
 
     openFileButton = new QPushButton(this);
     openFileButton->setFlat(true);
-    openFileButton->setFixedSize(25,25);
+    openFileButton->setFixedSize(20,20);
     openFileButton->setCursor(Qt::PointingHandCursor);
-    openFileButton->setStyleSheet("background-image:url(:/Image/focus.png)");
+    openFileButton->setStyleSheet("border-image:url(:/Image/folder.png)");
 
     openPicButton = new QPushButton(this);
     openPicButton->setFlat(true);
-    openPicButton->setFixedSize(25,25);
+    openPicButton->setFixedSize(20,20);
     openPicButton->setCursor(Qt::PointingHandCursor);
-    openPicButton->setStyleSheet("background-image:url(:/Image/focus.png)");
+    openPicButton->setStyleSheet("border-image:url(:/Image/picture.png)");
 
     shakeButton = new QPushButton(this);
     shakeButton->setFlat(true);
-    shakeButton->setFixedSize(25,25);
+    shakeButton->setFixedSize(20,20);
     shakeButton->setCursor(Qt::PointingHandCursor);
-    shakeButton->setStyleSheet("background-image:url(:/Image/focus.png)");
+    shakeButton->setStyleSheet("border-image:url(:/Image/shake.png)");
 
     QQpayButton = new QPushButton(this);
     QQpayButton->setFlat(true);
-    QQpayButton->setFixedSize(25,25);
+    QQpayButton->setFixedSize(20,20);
     QQpayButton->setCursor(Qt::PointingHandCursor);
-    QQpayButton->setStyleSheet("background-image:url(:/Image/focus.png)");
+    QQpayButton->setStyleSheet("border-image:url(:/Image/redpackage.png)");
 
     QQMusicButton = new QPushButton(this);
     QQMusicButton->setFlat(true);
-    QQMusicButton->setFixedSize(25,25);
+    QQMusicButton->setFixedSize(20,20);
     QQMusicButton->setCursor(Qt::PointingHandCursor);
-    QQMusicButton->setStyleSheet("background-image:url(:/Image/focus.png)");
+    QQMusicButton->setStyleSheet("border-image:url(:/Image/music.png)");
 
     moreButton = new QPushButton(this);
     moreButton->setFlat(true);
-    moreButton->setFixedSize(25,25);
+    moreButton->setFixedSize(20,20);
     moreButton->setCursor(Qt::PointingHandCursor);
-    moreButton->setStyleSheet("background-image:url(:/Image/focus.png)");
+    moreButton->setStyleSheet("border-image:url(:/Image/more_small.png)");
 
     historyRecordButton = new QPushButton(this);
     historyRecordButton->setFlat(true);
-    historyRecordButton->setFixedSize(25,25);
+    historyRecordButton->setFixedSize(20,20);
     historyRecordButton->setCursor(Qt::PointingHandCursor);
-    historyRecordButton->setStyleSheet("background-image:url(:/Image/focus.png)");
+    historyRecordButton->setStyleSheet("border-image:url(:/Image/history.png)");
 
     toolBoxLayout->addWidget(expressionButton);
     toolBoxLayout->addWidget(gifButton);
@@ -328,7 +346,8 @@ void converstationWindow::showMaxWindow()
     if(this->isMaximized())
     {
         this->showNormal();
-        buttonMax->setStyleSheet("background-image:url(:/Image/uncheck_hover.png)");
+        buttonMax->setToolTip("最大化");
+        buttonMax->setStyleSheet("background-image:url(:/Image/max.png)");
     }
     else
     {
@@ -342,10 +361,43 @@ void converstationWindow::showMaxWindow()
 //                                                -converstaionContent->height()
 //                                                -60);
 //        QQshow->resize(140,this->height() - titleBar->height());
-        buttonMax->setStyleSheet("background-image:url(:/Image/uncheck.png)");
+        buttonMax->setStyleSheet("background-image:url(:/Image/restore.png)");
+        buttonMax->setToolTip("还原");
         //conversationLayout->setSpacing(0);
         //this->move(0,0);
     }
+}
+
+void converstationWindow::showDropDownMenu()
+{
+    dropdownMenu = new QMenu(this);
+    dropdownMenu->addAction("保持窗口最前");
+    dropdownMenu->addAction("合并会话窗口");
+    dropdownMenu->addSeparator();
+    dropdownMenu->addAction("启用场景秀模式");
+    dropdownMenu->addAction("音视频通话设置");
+    dropdownMenu->addSeparator();
+    dropdownMenu->addAction("更多设置");
+    dropdownMenu->setStyleSheet("QMenu {"
+                                "background-color: white;"
+                                "border-radius:3px;"
+                                "margin:0px;"
+                                "border:1px solid lightgray;}"
+                            "QMenu::item { "
+                             "padding-left:20px;"
+                             "padding-right:20px;"
+                             "padding-top:5px;"
+                             "padding-bottom:5px;"
+                             "border-style:none; /* reserve space for selection border */}\
+                            QMenu::item:selected {\
+                                background: lightgray;\}"
+                            "QMenu::separator {\
+                                height: 1px;\
+                                background: lightgray;\
+                                margin-left: 0px;\
+                                margin-right: 0px;\}");
+    dropdownMenu->move(mapToGlobal(buttonDropdown->pos())+QPoint(5,40));
+    dropdownMenu->show();
 }
 
 void converstationWindow::mouseMoveEvent(QMouseEvent *event)

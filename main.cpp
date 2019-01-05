@@ -45,6 +45,7 @@ int main(int argc, char *argv[])
 
     converstationWindow w;
     w.show();
-
+//    Widget w;
+//    w.show();
     return a.exec();
 }

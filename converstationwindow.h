@@ -23,6 +23,7 @@ signals:
 
 public slots:
     void showMaxWindow();
+    void showDropDownMenu();
 private:
     QPushButton *buttonDropdown;
     QPushButton *buttonMin;
@@ -63,6 +64,7 @@ private:
     QLabel *QQshow;
     QVBoxLayout *conversationLayout;
 
+    QMenu *dropdownMenu;
 };
 
 #endif // CONVERSTATIONWINDOW_H
