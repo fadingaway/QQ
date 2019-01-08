@@ -56,5 +56,40 @@
         <file>Image/head_10.jpg</file>
         <file>Image/head_11.jpg</file>
         <file>Image/head_12.jpg</file>
+        <file>Image/App_package.png</file>
+        <file>Image/background.jpg</file>
+        <file>Image/call.png</file>
+        <file>Image/cloud.png</file>
+        <file>Image/contact.png</file>
+        <file>Image/crown.png</file>
+        <file>Image/deleteFriend.png</file>
+        <file>Image/email.png</file>
+        <file>Image/expression.png</file>
+        <file>Image/folder.png</file>
+        <file>Image/font.png</file>
+        <file>Image/game.png</file>
+        <file>Image/gif.png</file>
+        <file>Image/gift.png</file>
+        <file>Image/groupTalk.png</file>
+        <file>Image/history.png</file>
+        <file>Image/max.png</file>
+        <file>Image/minikeyboard.png</file>
+        <file>Image/more_big.png</file>
+        <file>Image/more_small.png</file>
+        <file>Image/moveFriend.png</file>
+        <file>Image/music.png</file>
+        <file>Image/picture.png</file>
+        <file>Image/police.png</file>
+        <file>Image/restore.png</file>
+        <file>Image/screen.png</file>
+        <file>Image/screenshare.png</file>
+        <file>Image/screenshot.png</file>
+        <file>Image/shake.png</file>
+        <file>Image/star.png</file>
+        <file>Image/videoTalk.png</file>
+        <file>Image/voice.png</file>
+        <file>Image/redpackage.png</file>
+        <file>Image/dropDown_small.png</file>
+        <file>Image/correct.png</file>
     </qresource>
 </RCC>

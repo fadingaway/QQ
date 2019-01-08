@@ -9,21 +9,39 @@
 #include "QComboBox"
 #include "QTextEdit"
 #include "QVBoxLayout"
+#include "mytextedit.h"
+#include "QPlainTextEdit"
+
+class MyTextEdit;
 class converstationWindow : public QWidget
 {
     Q_OBJECT
 public:
-    explicit converstationWindow(QWidget *parent = 0);
+    explicit converstationWindow(QWidget *parent,
+                                 QString acctNo,
+                                 QString nickName,
+                                 QString friendAcctNo,
+                                 QString friendNickName);
     void mouseMoveEvent(QMouseEvent *event);
     void mousePressEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
+    void mouseDoubleClickEvent(QMouseEvent *event);
     void paintEvent(QPaintEvent *event);
     QPixmap getRoundImage(const QPixmap &src, int radius);
+    void enlargeWindow(int px);
+    void sendTextToContent();
 signals:
 
 public slots:
     void showMaxWindow();
+    void showDropDownMenu();
+
 private:
+    QString nickName;
+    QString acctNo;
+    QString friendAcctNo;
+    QString friendNickName;
+
     QPushButton *buttonDropdown;
     QPushButton *buttonMin;
     QPushButton *buttonMax;
@@ -32,7 +50,7 @@ private:
     QPoint MousePressPos;
     QLabel *titleBar;
     QLabel *nameAndQQZone;
-    QLabel *nickName;
+    QLabel *nickNameLabel;
     QPushButton *buttonQQZone;
 
     QPushButton *voiceTalkButton;
@@ -52,7 +70,7 @@ private:
     QPushButton *moreButton;
     QPushButton *historyRecordButton;
 
-    QTextEdit *inputArea;
+    MyTextEdit *inputArea;
     QLabel *bottomLabel;
     QPushButton *closeButton;
     QPushButton *sendButton;
@@ -63,6 +81,8 @@ private:
     QLabel *QQshow;
     QVBoxLayout *conversationLayout;
 
+    QMenu *dropdownMenu;
+    bool isResizeInd = false;
 };
 
 #endif // CONVERSTATIONWINDOW_H

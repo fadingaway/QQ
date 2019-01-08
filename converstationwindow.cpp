@@ -13,11 +13,22 @@
 #include "QPainterPath"
 #include "qmath.h"
 #include "QScrollBar"
-converstationWindow::converstationWindow(QWidget *parent) : QWidget(parent)
+#include "QMenu"
+#include "QTime"
+
+converstationWindow::converstationWindow(QWidget *parent,
+                                         QString acctNo,
+                                         QString nickName,
+                                         QString friendAcctNo,
+                                         QString friendNickName) : QWidget(parent)
 {
     this->setWindowFlags(Qt::FramelessWindowHint);
     this->setAttribute(Qt::WA_TranslucentBackground);
     this->resize(600,500);
+    this->acctNo = acctNo;
+    this->nickName = nickName;
+    this->friendAcctNo = friendAcctNo;
+    this->friendNickName = friendNickName;
     this->setMaximumSize(QApplication::desktop()->availableGeometry().size());
     //this->setStyleSheet("border:1px solid black;");
 
@@ -31,13 +42,13 @@ converstationWindow::converstationWindow(QWidget *parent) : QWidget(parent)
     nameAndQQZone = new QLabel(this);
     QHBoxLayout *nameQQZoneLayout = new QHBoxLayout;
 
-    nickName = new QLabel(nameAndQQZone);
-    nickName->setText("Helloworld");
-    nickName->setFont(QFont("微软雅黑",12));
-    nickName->setAlignment(Qt::AlignCenter);
-    QFontMetrics fontWidth(nickName->font());
-    int width = fontWidth.width(nickName->text());  //计算字符串宽度
-    nickName->setFixedSize(width+4,25);
+    nickNameLabel = new QLabel(nameAndQQZone);
+    nickNameLabel->setText(this->friendNickName);
+    nickNameLabel->setFont(QFont("微软雅黑",12));
+    nickNameLabel->setAlignment(Qt::AlignCenter);
+    QFontMetrics fontWidth(nickNameLabel->font());
+    int width = fontWidth.width(nickNameLabel->text());  //计算字符串宽度
+    nickNameLabel->setFixedSize(width+4,25);
 
     buttonQQZone = new QPushButton(nameAndQQZone);
     buttonQQZone->setFlat(true);
@@ -46,7 +57,7 @@ converstationWindow::converstationWindow(QWidget *parent) : QWidget(parent)
     buttonQQZone->setStyleSheet("background-image:url(:/Image/focus.png)");
     nameQQZoneLayout->addStretch(3);
     //nameQQZoneLayout->addSpacing((this->width() - 4*30 - nickName->width() - buttonQQZone->width())/2);
-    nameQQZoneLayout->addWidget(nickName, Qt::AlignCenter);
+    nameQQZoneLayout->addWidget(nickNameLabel, Qt::AlignCenter);
     nameQQZoneLayout->addWidget(buttonQQZone, Qt::AlignCenter);
     nameQQZoneLayout->addStretch(2);
     //nameQQZoneLayout->addSpacing((this->width() - 4*30 - nickName->width() - buttonQQZone->width())/2);
@@ -60,21 +71,33 @@ converstationWindow::converstationWindow(QWidget *parent) : QWidget(parent)
     buttonDropdown->setFlat(true);
     buttonDropdown->setFixedSize(25,25);
     buttonDropdown->setCursor(Qt::PointingHandCursor);
-    buttonDropdown->setStyleSheet("QPushButton{background-image:url(:/Image/down_hover.png)}"
+    buttonDropdown->setStyleSheet("QPushButton{border-image:url(:/Image/dropDown_small.png)}"
+                                  "QPushButton:hover{background-color:#00BFFF;}"
+                                  "QPushButton:pressed{background-color:#009ACD;}"
                                   "QToolTip{background-color:white;font-family:微软雅黑;}");
+    buttonDropdown->setToolTip("窗口设置");
+    connect(buttonDropdown, &QPushButton::clicked, this, showDropDownMenu);
 
-    buttonMin = new QPushButton;
+    buttonMin = new QPushButton(this);
     buttonMin->setFlat(true);
     buttonMin->setFixedSize(25,25);
     buttonMin->setCursor(Qt::PointingHandCursor);
-    buttonMin->setStyleSheet("QPushButton{border-image:url(:/Image/min.png)} ");
+    buttonMin->setStyleSheet("QPushButton{border-image:url(:/Image/min.png)} "
+                             "QPushButton:hover{background-color:#00BFFF;}"
+                             "QPushButton:pressed{background-color:#009ACD;}"
+                             "QToolTip{background-color:white;font-family:微软雅黑;}" );
+    buttonMin->setToolTip("最小化");
     connect(buttonMin, &QPushButton::clicked, this, &converstationWindow::showMinimized);
 
     buttonMax = new QPushButton(this);
     buttonMax->setFlat(true);
     buttonMax->setFixedSize(25,25);
     buttonMax->setCursor(Qt::PointingHandCursor);
-    buttonMax->setStyleSheet("background-image:url(:/Image/uncheck_hover.png)");
+    buttonMax->setStyleSheet("QPushButton{border-image:url(:/Image/max.png)}"
+                             "QPushButton:hover{background-color:#00BFFF;}"
+                             "QPushButton:pressed{background-color:#009ACD;}"
+                             "QToolTip{background-color:white;font-family:微软雅黑;}");
+    buttonMax->setToolTip("最大化");
     connect(buttonMax, &QPushButton::clicked, this, &converstationWindow::showMaxWindow);
 
     buttonClose = new QPushButton;
@@ -83,8 +106,10 @@ converstationWindow::converstationWindow(QWidget *parent) : QWidget(parent)
     buttonClose->setCursor(Qt::PointingHandCursor);
     buttonClose->setAttribute(Qt::WA_TranslucentBackground);
     buttonClose->setStyleSheet("QPushButton{border-image:url(:/Image/exit.png)} "
-                               "QPushButton:hover{background-color:#00BFFF;}"
-                               "QPushButton:pressed{background-color:#009ACD;}");
+                               "QPushButton:hover{background-color:red;}"
+                               "QPushButton:pressed{background-color:#009ACD;}"
+                               "QToolTip{background-color:white;font-family:微软雅黑;}");
+    buttonClose->setToolTip("关闭");
     connect(buttonClose, &QPushButton::clicked, this, &converstationWindow::close);
 
     titleLayout->addWidget(nameAndQQZone);
@@ -106,105 +131,115 @@ converstationWindow::converstationWindow(QWidget *parent) : QWidget(parent)
     QHBoxLayout *mutiwayTalkLayout = new QHBoxLayout;
     voiceTalkButton = new QPushButton(this);
     voiceTalkButton->setFlat(true);
-    voiceTalkButton->setFixedSize(30,30);
+    voiceTalkButton->setFixedSize(25,25);
     voiceTalkButton->setCursor(Qt::PointingHandCursor);
-    QPixmap pixmap_1(":/Image/online.png");
-    pixmap_1 = getRoundImage(pixmap_1, voiceTalkButton->width()/2);
-    voiceTalkButton->setIcon(QIcon(pixmap_1));
-
+    voiceTalkButton->setStyleSheet("QPushButton{border-image:url(:/Image/call.png); border-radius:10px;"
+                                   "background-color:rgb(228,237,245)}"
+                                   "QPushButton::hover{background-color:rgb(205,222,236)}");
+    voiceTalkButton->setToolTip("发起语音通话");
 
     videoTalkButton = new QPushButton(this);
     videoTalkButton->setFlat(true);
-    videoTalkButton->setFixedSize(30,30);
+    videoTalkButton->setFixedSize(25,25);
     videoTalkButton->setCursor(Qt::PointingHandCursor);
-    QPixmap pixmap_2(":/Image/offline.png");
-    pixmap_2 = getRoundImage(pixmap_2, voiceTalkButton->width()/2);
-    videoTalkButton->setIcon(QIcon(pixmap_2));
+    videoTalkButton->setStyleSheet("QPushButton{border-image:url(:/Image/videoTalk.png); border-radius:10px;"
+                                   "background-color:rgb(228,237,245)}"
+                                   "QPushButton::hover{background-color:rgb(205,222,236)}");
+    videoTalkButton->setToolTip("发起视频通话");
 
     otherButton = new QPushButton(this);
     otherButton->setFlat(true);
-    otherButton->setFixedSize(30,30);
+    otherButton->setFixedSize(25,25);
     otherButton->setCursor(Qt::PointingHandCursor);
-    QPixmap pixmap_3(":/Image/hide.png");
-    pixmap_3 = getRoundImage(pixmap_3, voiceTalkButton->width()/2);
-    otherButton->setIcon(QIcon(pixmap_3));
+    otherButton->setStyleSheet("QPushButton{border-image:url(:/Image/more_big.png); border-radius:10px;"
+                                   "background-color:rgb(228,237,245)}"
+                                   "QPushButton::hover{background-color:rgb(205,222,236)}");
+
 
     mutiwayTalkLayout->addStretch(5);
     mutiwayTalkLayout->addWidget(voiceTalkButton);
     mutiwayTalkLayout->addWidget(videoTalkButton);
     mutiwayTalkLayout->addWidget(otherButton);
-    mutiwayTalkLayout->setSpacing(5);
+    mutiwayTalkLayout->setSpacing(10);
     mutiwayTalkLayout->setContentsMargins(0,12,13,3);
 
     conversationLayout = new QVBoxLayout;
     converstaionContent = new QTextEdit(this);
     converstaionContent->resize(this->width()-140, this->height());
-    //converstaionContent->setReadOnly(true);
+    converstaionContent->setReadOnly(true);
+    converstaionContent->setFontFamily("微软雅黑");
+    converstaionContent->setFontPointSize(10);
+    converstaionContent->setLineWidth(converstaionContent->width()- 10);
     converstaionContent->setStyleSheet("border-bottom:1px solid lightgray;"
                                        "border-left-style:none;"
                                        "border-right-style:none;"
                                        "border-top-style:none;");
 
     QHBoxLayout *toolBoxLayout = new QHBoxLayout;
+
+    toolboxLabel = new QLabel(this);
+    toolboxLabel->resize(this->width()-140, 22);
+    toolboxLabel->setAttribute(Qt::WA_TranslucentBackground);
+
     expressionButton = new QPushButton(this);
     expressionButton->setFlat(true);
-    expressionButton->setFixedSize(25,25);
+    expressionButton->setFixedSize(20,20);
     expressionButton->setCursor(Qt::PointingHandCursor);
-    expressionButton->setStyleSheet("background-image:url(:/Image/focus.png)");
+    expressionButton->setStyleSheet("border-image:url(:/Image/expression.png)");
 
     gifButton = new QPushButton(this);
     gifButton->setFlat(true);
-    gifButton->setFixedSize(25,25);
+    gifButton->setFixedSize(20,20);
     gifButton->setCursor(Qt::PointingHandCursor);
-    gifButton->setStyleSheet("background-image:url(:/Image/focus.png)");
+    gifButton->setStyleSheet("border-image:url(:/Image/gif.png)");
 
     copyAndCutButton = new QPushButton(this);
     copyAndCutButton->setFlat(true);
-    copyAndCutButton->setFixedSize(25,25);
+    copyAndCutButton->setFixedSize(20,20);
     copyAndCutButton->setCursor(Qt::PointingHandCursor);
-    copyAndCutButton->setStyleSheet("background-image:url(:/Image/focus.png)");
+    copyAndCutButton->setStyleSheet("border-image:url(:/Image/screenshot.png)");
 
     openFileButton = new QPushButton(this);
     openFileButton->setFlat(true);
-    openFileButton->setFixedSize(25,25);
+    openFileButton->setFixedSize(20,20);
     openFileButton->setCursor(Qt::PointingHandCursor);
-    openFileButton->setStyleSheet("background-image:url(:/Image/focus.png)");
+    openFileButton->setStyleSheet("border-image:url(:/Image/folder.png)");
 
     openPicButton = new QPushButton(this);
     openPicButton->setFlat(true);
-    openPicButton->setFixedSize(25,25);
+    openPicButton->setFixedSize(20,20);
     openPicButton->setCursor(Qt::PointingHandCursor);
-    openPicButton->setStyleSheet("background-image:url(:/Image/focus.png)");
+    openPicButton->setStyleSheet("border-image:url(:/Image/picture.png)");
 
     shakeButton = new QPushButton(this);
     shakeButton->setFlat(true);
-    shakeButton->setFixedSize(25,25);
+    shakeButton->setFixedSize(20,20);
     shakeButton->setCursor(Qt::PointingHandCursor);
-    shakeButton->setStyleSheet("background-image:url(:/Image/focus.png)");
+    shakeButton->setStyleSheet("border-image:url(:/Image/shake.png)");
 
     QQpayButton = new QPushButton(this);
     QQpayButton->setFlat(true);
-    QQpayButton->setFixedSize(25,25);
+    QQpayButton->setFixedSize(20,20);
     QQpayButton->setCursor(Qt::PointingHandCursor);
-    QQpayButton->setStyleSheet("background-image:url(:/Image/focus.png)");
+    QQpayButton->setStyleSheet("border-image:url(:/Image/redpackage.png)");
 
     QQMusicButton = new QPushButton(this);
     QQMusicButton->setFlat(true);
-    QQMusicButton->setFixedSize(25,25);
+    QQMusicButton->setFixedSize(20,20);
     QQMusicButton->setCursor(Qt::PointingHandCursor);
-    QQMusicButton->setStyleSheet("background-image:url(:/Image/focus.png)");
+    QQMusicButton->setStyleSheet("border-image:url(:/Image/music.png)");
 
     moreButton = new QPushButton(this);
     moreButton->setFlat(true);
-    moreButton->setFixedSize(25,25);
+    moreButton->setFixedSize(20,20);
     moreButton->setCursor(Qt::PointingHandCursor);
-    moreButton->setStyleSheet("background-image:url(:/Image/focus.png)");
+    moreButton->setStyleSheet("border-image:url(:/Image/more_small.png)");
 
     historyRecordButton = new QPushButton(this);
     historyRecordButton->setFlat(true);
-    historyRecordButton->setFixedSize(25,25);
+    historyRecordButton->setFixedSize(20,20);
     historyRecordButton->setCursor(Qt::PointingHandCursor);
-    historyRecordButton->setStyleSheet("background-image:url(:/Image/focus.png)");
+    historyRecordButton->setStyleSheet("border-image:url(:/Image/history.png)");
 
     toolBoxLayout->addWidget(expressionButton);
     toolBoxLayout->addWidget(gifButton);
@@ -219,16 +254,16 @@ converstationWindow::converstationWindow(QWidget *parent) : QWidget(parent)
     toolBoxLayout->setSpacing(5);
     toolBoxLayout->addWidget(historyRecordButton, Qt::AlignRight);
     toolBoxLayout->setContentsMargins(5,1,13,1);
+    toolboxLabel->setLayout(toolBoxLayout);
 
-//    toolboxLabel = new QLabel(this);
-//    toolboxLabel->setFixedSize(this->width()-140,27);
-//    toolboxLabel->setLayout(toolBoxLayout);
-
-    inputArea = new QTextEdit(this);
+    inputArea = new MyTextEdit(this);
     inputArea->resize(this->width()-140, this->height()-titleBar->height()
                                             -converstaionContent->height()
                                             );
     inputArea->setStyleSheet("border-style:none;");
+    inputArea->setMinimumHeight(20);
+    connect(inputArea, &MyTextEdit::enterKeyPressed, this, &converstationWindow::sendTextToContent);
+
 
     QHBoxLayout *bottomLayout = new QHBoxLayout;
     closeButton = new QPushButton(this);
@@ -240,6 +275,7 @@ converstationWindow::converstationWindow(QWidget *parent) : QWidget(parent)
                                "font-family:微软雅黑;border:1px solid lightgray;}"
                                "QPushButton:hover{background-color:#00BFFF;}"
                                "QPushButton:pressed{background-color:#009ACD;}");
+    connect(closeButton , &QPushButton::clicked, this, &converstationWindow::close);
 
     sendButton = new QPushButton(this);
     sendButton->setFixedSize(90,30);
@@ -248,6 +284,7 @@ converstationWindow::converstationWindow(QWidget *parent) : QWidget(parent)
                               "color:white;border-radius:3px;}"
                               "QPushButton:hover{background-color:#009ACD;}");
 
+
     QHBoxLayout *sendButtonLayout = new QHBoxLayout;
 
     sendMsgButton = new QPushButton(this);
@@ -255,12 +292,20 @@ converstationWindow::converstationWindow(QWidget *parent) : QWidget(parent)
     sendMsgButton->setFlat(true);
     sendMsgButton->setFixedSize(63,30);
     sendMsgButton->setCursor(Qt::PointingHandCursor);
+    connect(sendMsgButton, &QPushButton::clicked, this, &converstationWindow::sendTextToContent);
 
     sendMoreButton = new QPushButton(this);
     sendMoreButton->setFlat(true);
     sendMoreButton->setFixedSize(27,30);
     sendMoreButton->setCursor(Qt::PointingHandCursor);
     sendMoreButton->setStyleSheet("background-image:url(:/Image/down_hover.png);");
+    connect(sendMoreButton, &QPushButton::clicked, [=]{converstaionContent->resize(converstaionContent->width(),
+                                                                                   converstaionContent->height()+5);
+                                                       toolboxLabel->move(toolboxLabel->pos()+QPoint(0,5));
+                                                        inputArea->resize(inputArea->width(),
+                                                                         inputArea->height()-5);
+                                                       inputArea->move(inputArea->pos() + QPoint(0,5));});
+
     sendButtonLayout->addWidget(sendMsgButton);
     sendButtonLayout->addWidget(sendMoreButton);
     sendButtonLayout->setMargin(0);
@@ -272,13 +317,10 @@ converstationWindow::converstationWindow(QWidget *parent) : QWidget(parent)
     bottomLayout->addWidget(sendButton, Qt::AlignRight);
     bottomLayout->setSpacing(13);
     bottomLayout->setContentsMargins(0,5,13,5);
-//    bottomLabel = new QLabel(this);
-//    bottomLabel->setLayout(bottomLayout);
-//    bottomLabel->resize(this->width()-140, 40);
 
     conversationLayout->addLayout(mutiwayTalkLayout, 1);
     conversationLayout->addWidget(converstaionContent, 9);
-    conversationLayout->addLayout(toolBoxLayout, 1);
+    conversationLayout->addWidget(toolboxLabel, 1);
     conversationLayout->addWidget(inputArea, 4);
     conversationLayout->addLayout(bottomLayout, 1);
     conversationLayout->setContentsMargins(1,0,0,0);
@@ -323,28 +365,13 @@ void converstationWindow::mouseReleaseEvent(QMouseEvent *event)
     isMousePressed = false;
 }
 
-void converstationWindow::showMaxWindow()
+void converstationWindow::mouseDoubleClickEvent(QMouseEvent *event)
 {
-    if(this->isMaximized())
+    if(event->pos().x() > 0&& event->pos().y() > 0
+            && event->pos().x() < titleBar->width()
+            && event->pos().y() < titleBar->height())
     {
-        this->showNormal();
-        buttonMax->setStyleSheet("background-image:url(:/Image/uncheck_hover.png)");
-    }
-    else
-    {
-        this->showMaximized();
-//        QDesktopWidget* desktopWidget = QApplication::desktop();
-//        QRect clientRect = desktopWidget->availableGeometry();
-//        this->resize(clientRect.size());
-//        converstaionContent->resize(this->width()-140, this->height()*4/7);
-//        inputArea->resize(this->width()-140, this->height()
-//                                                -titleBar->height()
-//                                                -converstaionContent->height()
-//                                                -60);
-//        QQshow->resize(140,this->height() - titleBar->height());
-        buttonMax->setStyleSheet("background-image:url(:/Image/uncheck.png)");
-        //conversationLayout->setSpacing(0);
-        //this->move(0,0);
+        showMaxWindow();
     }
 }
 
@@ -354,6 +381,63 @@ void converstationWindow::mouseMoveEvent(QMouseEvent *event)
     {
         move(event->pos() - MousePressPos + this->pos());
     }
+}
+
+void converstationWindow::showMaxWindow()
+{
+    if(this->isMaximized())
+    {
+        this->showNormal();
+        buttonMax->setToolTip("最大化");
+        buttonMax->setStyleSheet("background-image:url(:/Image/max.png)");
+    }
+    else
+    {
+        this->showMaximized();
+        buttonMax->setStyleSheet("background-image:url(:/Image/restore.png)");
+        buttonMax->setToolTip("还原");
+    }
+}
+
+void converstationWindow::showDropDownMenu()
+{
+    dropdownMenu = new QMenu(this);
+    dropdownMenu->addAction("保持窗口最前");
+    dropdownMenu->addAction("合并会话窗口");
+    dropdownMenu->addSeparator();
+    dropdownMenu->addAction("启用场景秀模式");
+    dropdownMenu->addAction("音视频通话设置");
+    dropdownMenu->addSeparator();
+    dropdownMenu->addAction("更多设置");
+    dropdownMenu->setStyleSheet("QMenu {"
+                                "background-color: white;"
+                                "border-radius:3px;"
+                                "margin:0px;"
+                                "border:1px solid lightgray;}"
+                            "QMenu::item { "
+                             "padding-left:20px;"
+                             "padding-right:20px;"
+                             "padding-top:5px;"
+                             "padding-bottom:5px;\
+                             border-style:none; /* reserve space for selection border */}\
+                            QMenu::item:selected {\
+                                background: lightgray;}\
+                            QMenu::separator {\
+                                height: 1px;\
+                                background: lightgray;\
+                                margin-left: 0px;\
+                                margin-right: 0px;\}");
+    dropdownMenu->move(mapToGlobal(buttonDropdown->pos())+QPoint(5,40));
+    dropdownMenu->setStyleSheet("font-family:微软雅黑;font-size:10;");
+    dropdownMenu->show();
+
+    QAction *action = new QAction(dropdownMenu);
+    action->setText("test");
+    action->setChecked(true);
+    dropdownMenu->addAction(action);
+    action->setCheckable(true);
+    action->setChecked(true);
+
 }
 
 void converstationWindow::paintEvent(QPaintEvent *event)
@@ -395,4 +479,15 @@ QPixmap converstationWindow::getRoundImage(const QPixmap &src, int radius)
     painter.drawPixmap(0, 0, 2*radius+4, 2*radius+4, src);
 
     return pixmap;
+}
+
+
+void converstationWindow::sendTextToContent()
+{
+    QString inputText = inputArea->toPlainText();
+    QString currentTime = QTime::currentTime().toString("hh:mm:ss");
+    QString outputText = this->nickName + " " + currentTime +
+            "\n    " +inputText;
+    converstaionContent->append(outputText);
+    inputArea->clear();
 }

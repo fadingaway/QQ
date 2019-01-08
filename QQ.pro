@@ -29,7 +29,8 @@ SOURCES += main.cpp\
     newfrienditem.cpp \
     classifyitem.cpp \
     listwidget.cpp \
-    converstationwindow.cpp
+    converstationwindow.cpp \
+    mytextedit.cpp
 
 HEADERS  += widget.h \
     mylabel.h \
@@ -46,7 +47,8 @@ HEADERS  += widget.h \
     newfrienditem.h \
     classifyitem.h \
     listwidget.h \
-    converstationwindow.h
+    converstationwindow.h \
+    mytextedit.h
 
 FORMS    += widget.ui
 

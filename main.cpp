@@ -43,8 +43,9 @@ int main(int argc, char *argv[])
 //    ContactTab w(nullptr, 370, 800);
 //    w.show();
 
-    converstationWindow w;
+    converstationWindow w(nullptr, "111","hello World","222", "Mr Nobody");
     w.show();
-
+//    Widget w;
+//    w.show();
     return a.exec();
 }
