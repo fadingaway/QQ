@@ -30,7 +30,8 @@ SOURCES += main.cpp\
     classifyitem.cpp \
     listwidget.cpp \
     converstationwindow.cpp \
-    mytextedit.cpp
+    mytextedit.cpp \
+    filetransferthread.cpp
 
 HEADERS  += widget.h \
     mylabel.h \
@@ -48,7 +49,8 @@ HEADERS  += widget.h \
     classifyitem.h \
     listwidget.h \
     converstationwindow.h \
-    mytextedit.h
+    mytextedit.h \
+    filetransferthread.h
 
 FORMS    += widget.ui
 

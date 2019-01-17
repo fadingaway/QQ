@@ -15,7 +15,10 @@
 #include "QScrollBar"
 #include "QMenu"
 #include "QTime"
-
+#include "QDesktopServices"
+#include "QPropertyAnimation"
+#include "QTimer"
+#include "QFileDialog"
 converstationWindow::converstationWindow(QWidget *parent,
                                          QString acctNo,
                                          QString nickName,
@@ -54,13 +57,13 @@ converstationWindow::converstationWindow(QWidget *parent,
     buttonQQZone->setFlat(true);
     buttonQQZone->setFixedSize(25,25);
     buttonQQZone->setCursor(Qt::PointingHandCursor);
-    buttonQQZone->setStyleSheet("background-image:url(:/Image/focus.png)");
+    buttonQQZone->setStyleSheet("background-image:url(:/Image/star.png)");
+    connect(buttonQQZone, &QPushButton::clicked, [=]{QDesktopServices::openUrl(QUrl("www.QQZone.com"));});
+
     nameQQZoneLayout->addStretch(3);
-    //nameQQZoneLayout->addSpacing((this->width() - 4*30 - nickName->width() - buttonQQZone->width())/2);
     nameQQZoneLayout->addWidget(nickNameLabel, Qt::AlignCenter);
     nameQQZoneLayout->addWidget(buttonQQZone, Qt::AlignCenter);
     nameQQZoneLayout->addStretch(2);
-    //nameQQZoneLayout->addSpacing((this->width() - 4*30 - nickName->width() - buttonQQZone->width())/2);
     nameQQZoneLayout->setSpacing(0);
     nameQQZoneLayout->setMargin(0);
     nameAndQQZone->setLayout(nameQQZoneLayout);
@@ -128,6 +131,13 @@ converstationWindow::converstationWindow(QWidget *parent,
 
     QHBoxLayout *contentLayout = new QHBoxLayout;
 
+    talkWayContainter = new QLabel(this);
+
+    clock = new QTimer(this);
+    clock->setInterval(3000);
+
+    QHBoxLayout *talkcontainerLayout = new QHBoxLayout;
+
     QHBoxLayout *mutiwayTalkLayout = new QHBoxLayout;
     voiceTalkButton = new QPushButton(this);
     voiceTalkButton->setFlat(true);
@@ -147,21 +157,66 @@ converstationWindow::converstationWindow(QWidget *parent,
                                    "QPushButton::hover{background-color:rgb(205,222,236)}");
     videoTalkButton->setToolTip("发起视频通话");
 
+    screenControlButton = new QPushButton(this);
+    screenControlButton->setFlat(true);
+    screenControlButton->setFixedSize(25,25);
+    screenControlButton->setCursor(Qt::PointingHandCursor);
+    screenControlButton->setStyleSheet("QPushButton{border-image:url(:/Image/screen.png); border-radius:10px;"
+                                   "background-color:rgb(228,237,245)}"
+                                   "QPushButton::hover{background-color:rgb(205,222,236)}");
+    screenControlButton->setToolTip("请求对方控制电脑");
+    screenControlButton->hide();
+    screenControlButton->installEventFilter(this);
+
+    screenShareButton = new QPushButton(this);
+    screenShareButton->setFlat(true);
+    screenShareButton->setFixedSize(25,25);
+    screenShareButton->setCursor(Qt::PointingHandCursor);
+    screenShareButton->setStyleSheet("QPushButton{border-image:url(:/Image/screenshare.png); border-radius:10px;"
+                                   "background-color:rgb(228,237,245)}"
+                                   "QPushButton::hover{background-color:rgb(205,222,236)}");
+    screenShareButton->setToolTip("分享屏幕");
+    screenShareButton->hide();
+    screenShareButton->installEventFilter(this);
+
+    AppPackageButton = new QPushButton(this);
+    AppPackageButton->setFlat(true);
+    AppPackageButton->setFixedSize(25,25);
+    AppPackageButton->setCursor(Qt::PointingHandCursor);
+    AppPackageButton->setStyleSheet("QPushButton{border-image:url(:/Image/App_package.png); border-radius:10px;"
+                                   "background-color:rgb(228,237,245)}"
+                                   "QPushButton::hover{background-color:rgb(205,222,236)}");
+    AppPackageButton->setToolTip("其他功能");
+    AppPackageButton->hide();
+    AppPackageButton->installEventFilter(this);
+
+    talkcontainerLayout->addStretch(3);
+    talkcontainerLayout->addWidget(voiceTalkButton, Qt::AlignRight);
+    talkcontainerLayout->addWidget(videoTalkButton, Qt::AlignRight);
+    talkcontainerLayout->addWidget(screenControlButton, Qt::AlignRight);
+    talkcontainerLayout->addWidget(screenShareButton, Qt::AlignRight);
+    talkcontainerLayout->addWidget(AppPackageButton, Qt::AlignRight);
+    talkcontainerLayout->setSpacing(10);
+    talkcontainerLayout->setMargin(0);
+    talkWayContainter->setLayout(talkcontainerLayout);
+    talkWayContainter->setFixedHeight(25);
+    talkWayContainter->setMinimumWidth(70);
+
     otherButton = new QPushButton(this);
     otherButton->setFlat(true);
     otherButton->setFixedSize(25,25);
     otherButton->setCursor(Qt::PointingHandCursor);
-    otherButton->setStyleSheet("QPushButton{border-image:url(:/Image/more_big.png); border-radius:10px;"
-                                   "background-color:rgb(228,237,245)}"
-                                   "QPushButton::hover{background-color:rgb(205,222,236)}");
+    otherButton->setStyleSheet("QPushButton{border-image:url(:/Image/more_big.png); "
+                               "border-radius:10px;"
+                               "background-color:rgb(228,237,245)}"
+                               "QPushButton::hover{background-color:rgb(205,222,236)}");
+    otherButton->installEventFilter(this);
+    connect(otherButton, &QPushButton::clicked,this, &converstationWindow::showHideFunction);
 
-
-    mutiwayTalkLayout->addStretch(5);
-    mutiwayTalkLayout->addWidget(voiceTalkButton);
-    mutiwayTalkLayout->addWidget(videoTalkButton);
+    mutiwayTalkLayout->addWidget(talkWayContainter);
     mutiwayTalkLayout->addWidget(otherButton);
     mutiwayTalkLayout->setSpacing(10);
-    mutiwayTalkLayout->setContentsMargins(0,12,13,3);
+    mutiwayTalkLayout->setContentsMargins(0,5,13,5);
 
     conversationLayout = new QVBoxLayout;
     converstaionContent = new QTextEdit(this);
@@ -186,60 +241,70 @@ converstationWindow::converstationWindow(QWidget *parent,
     expressionButton->setFixedSize(20,20);
     expressionButton->setCursor(Qt::PointingHandCursor);
     expressionButton->setStyleSheet("border-image:url(:/Image/expression.png)");
+    expressionButton->setToolTip("表情");
 
     gifButton = new QPushButton(this);
     gifButton->setFlat(true);
     gifButton->setFixedSize(20,20);
     gifButton->setCursor(Qt::PointingHandCursor);
     gifButton->setStyleSheet("border-image:url(:/Image/gif.png)");
+    gifButton->setToolTip("动态表情");
 
     copyAndCutButton = new QPushButton(this);
     copyAndCutButton->setFlat(true);
     copyAndCutButton->setFixedSize(20,20);
     copyAndCutButton->setCursor(Qt::PointingHandCursor);
     copyAndCutButton->setStyleSheet("border-image:url(:/Image/screenshot.png)");
+    copyAndCutButton->setToolTip("截图");
 
     openFileButton = new QPushButton(this);
     openFileButton->setFlat(true);
     openFileButton->setFixedSize(20,20);
     openFileButton->setCursor(Qt::PointingHandCursor);
     openFileButton->setStyleSheet("border-image:url(:/Image/folder.png)");
+    openFileButton->setToolTip("发送文件");
 
     openPicButton = new QPushButton(this);
     openPicButton->setFlat(true);
     openPicButton->setFixedSize(20,20);
     openPicButton->setCursor(Qt::PointingHandCursor);
     openPicButton->setStyleSheet("border-image:url(:/Image/picture.png)");
+    openPicButton->setToolTip("发送图片");
 
     shakeButton = new QPushButton(this);
     shakeButton->setFlat(true);
     shakeButton->setFixedSize(20,20);
     shakeButton->setCursor(Qt::PointingHandCursor);
     shakeButton->setStyleSheet("border-image:url(:/Image/shake.png)");
+    shakeButton->setToolTip("抖动");
 
     QQpayButton = new QPushButton(this);
     QQpayButton->setFlat(true);
     QQpayButton->setFixedSize(20,20);
     QQpayButton->setCursor(Qt::PointingHandCursor);
     QQpayButton->setStyleSheet("border-image:url(:/Image/redpackage.png)");
+    QQpayButton->setToolTip("发红包");
 
     QQMusicButton = new QPushButton(this);
     QQMusicButton->setFlat(true);
     QQMusicButton->setFixedSize(20,20);
     QQMusicButton->setCursor(Qt::PointingHandCursor);
     QQMusicButton->setStyleSheet("border-image:url(:/Image/music.png)");
+    QQMusicButton->setToolTip("分享音乐");
 
     moreButton = new QPushButton(this);
     moreButton->setFlat(true);
     moreButton->setFixedSize(20,20);
     moreButton->setCursor(Qt::PointingHandCursor);
     moreButton->setStyleSheet("border-image:url(:/Image/more_small.png)");
+    moreButton->setToolTip("更多");
 
     historyRecordButton = new QPushButton(this);
     historyRecordButton->setFlat(true);
     historyRecordButton->setFixedSize(20,20);
     historyRecordButton->setCursor(Qt::PointingHandCursor);
     historyRecordButton->setStyleSheet("border-image:url(:/Image/history.png)");
+    historyRecordButton->setToolTip("历史记录");
 
     toolBoxLayout->addWidget(expressionButton);
     toolBoxLayout->addWidget(gifButton);
@@ -440,6 +505,41 @@ void converstationWindow::showDropDownMenu()
 
 }
 
+void converstationWindow::showHideFunction()
+{
+    if(isPackageShowed)
+    {
+        isPackageShowed = false;
+        screenControlButton->hide();
+        screenShareButton->hide();
+        AppPackageButton->hide();
+        otherButton->setStyleSheet("QPushButton{border-image:url(:/Image/more_big.png);"
+                                   "border-radius:10px;"
+                                   "background-color:rgb(228,237,245)}"
+                                   "QPushButton::hover{background-color:rgb(205,222,236)}");
+    }
+    else
+    {
+        isPackageShowed = true;
+        screenControlButton->show();
+        screenShareButton->show();
+        AppPackageButton->show();
+        otherButton->setStyleSheet("QPushButton{border-image:url(:/Image/pressed.png);"
+                                   "border-radius:10px;"
+                                   "background-color:rgb(228,237,245)}"
+                                   "QPushButton::hover{background-color:rgb(205,222,236)}");
+    }
+}
+
+void converstationWindow::showOpenFileMenu()
+{
+    QMenu *fileMenu = new QMenu(this);
+    fileMenu->addAction("发送文件",openFile());
+    fileMenu->addAction("发送文件夹", openFolder());
+    fileMenu.move(80, titleBar->height() + converstaionContent->height());
+    fileMenu->show();
+}
+
 void converstationWindow::paintEvent(QPaintEvent *event)
 {
     QPainterPath path;
@@ -490,4 +590,49 @@ void converstationWindow::sendTextToContent()
             "\n    " +inputText;
     converstaionContent->append(outputText);
     inputArea->clear();
+}
+
+bool converstationWindow::eventFilter(QObject *watched, QEvent *event)
+{
+    if(watched == otherButton)
+    {
+        if(event->type() == QEvent::Leave)
+        {
+            connect(clock, &QTimer::timeout, [=]{screenControlButton->hide();
+                                                screenShareButton->hide();
+                                                AppPackageButton->hide();
+                                                isPackageShowed = false;
+                                                otherButton->setStyleSheet("QPushButton{border-image:url(:/Image/more_big.png);"
+                                                                           "border-radius:10px;"
+                                                                           "background-color:rgb(228,237,245)}"
+                                                                           "QPushButton::hover{background-color:rgb(205,222,236)}");
+                                                ;});
+            clock->start();
+        }
+    }
+    else if(watched == screenControlButton
+            ||watched == screenShareButton
+            ||watched == AppPackageButton )
+    {
+        if(event->type() == QEvent::HoverEnter||event->type() == QEvent::Enter)
+        {
+            clock->blockSignals(true);
+        }
+        else if(event->type() == QEvent::HoverLeave||event->type() == QEvent::Leave)
+        {
+            clock->blockSignals(false);
+            clock->start(3000);
+        }
+    }
+
+    return QWidget::eventFilter(watched, event);
+}
+
+void converstationWindow::openFile()
+{
+    QStringList fileNameList = QFileDialog::getOpenFileNames(this);
+    if(!fileNameList.isEmpty())
+    {
+
+    }
 }

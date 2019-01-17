@@ -30,12 +30,16 @@ public:
     QPixmap getRoundImage(const QPixmap &src, int radius);
     void enlargeWindow(int px);
     void sendTextToContent();
+    bool eventFilter(QObject *watched, QEvent *event);
+    void openFile();
+    void openFolder();
 signals:
 
 public slots:
     void showMaxWindow();
     void showDropDownMenu();
-
+    void showHideFunction();
+    void showOpenFileMenu();
 private:
     QString nickName;
     QString acctNo;
@@ -53,8 +57,12 @@ private:
     QLabel *nickNameLabel;
     QPushButton *buttonQQZone;
 
+    QLabel *talkWayContainter;
     QPushButton *voiceTalkButton;
     QPushButton *videoTalkButton;
+    QPushButton *screenShareButton;
+    QPushButton *screenControlButton;
+    QPushButton *AppPackageButton;
     QPushButton *otherButton;
 
     QTextEdit *converstaionContent;
@@ -83,6 +91,8 @@ private:
 
     QMenu *dropdownMenu;
     bool isResizeInd = false;
+    bool isPackageShowed = false;
+    QTimer *clock;
 };
 
 #endif // CONVERSTATIONWINDOW_H
